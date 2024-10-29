@@ -38,6 +38,8 @@ public class PersonaInputAdapterRest {
 	PersonInputPort personInputPort;
 
 	private String setPersonOutputPortInjection(String dbOption) throws InvalidOptionException {
+		log.info("Database option received: {}", dbOption); // Debugging
+
 		if (dbOption.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
 			personInputPort = new PersonUseCase(personOutputPortMaria);
 			return DatabaseOption.MARIA.toString();

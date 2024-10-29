@@ -34,6 +34,7 @@ public class PersonaControllerV1 {
 	@GetMapping(path = "/{database}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<PersonaResponse> personas(@PathVariable String database) {
 		log.info("Into personas REST API");
+		// Asegurarse de que siempre se procese en mayúsculas o minúsculas
 		return personaInputAdapterRest.historial(database.toUpperCase());
 	}
 
