@@ -43,7 +43,7 @@ public class PersonaInputAdapterRest {
 			return DatabaseOption.MARIA.toString();
 		} else if (dbOption.equalsIgnoreCase(DatabaseOption.MONGO.toString())) {
 			personInputPort = new PersonUseCase(personOutputPortMongo);
-			return  DatabaseOption.MONGO.toString();
+			return DatabaseOption.MONGO.toString();
 		} else {
 			throw new InvalidOptionException("Invalid database option: " + dbOption);
 		}
@@ -52,14 +52,14 @@ public class PersonaInputAdapterRest {
 	public List<PersonaResponse> historial(String database) {
 		log.info("Into historial PersonaEntity in Input Adapter");
 		try {
-			if(setPersonOutputPortInjection(database).equalsIgnoreCase(DatabaseOption.MARIA.toString())){
+			if (setPersonOutputPortInjection(database).equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
 				return personInputPort.findAll().stream().map(personaMapperRest::fromDomainToAdapterRestMaria)
 						.collect(Collectors.toList());
-			}else {
+			} else {
 				return personInputPort.findAll().stream().map(personaMapperRest::fromDomainToAdapterRestMongo)
 						.collect(Collectors.toList());
 			}
-			
+
 		} catch (InvalidOptionException e) {
 			log.warn(e.getMessage());
 			return new ArrayList<PersonaResponse>();
@@ -68,12 +68,16 @@ public class PersonaInputAdapterRest {
 
 	public PersonaResponse crearPersona(PersonaRequest request) {
 		try {
-			setPersonOutputPortInjection(request.getDatabase());
+			String database = setPersonOutputPortInjection(request.getDatabase());
 			Person person = personInputPort.create(personaMapperRest.fromAdapterToDomain(request));
-			return personaMapperRest.fromDomainToAdapterRestMaria(person);
+
+			if (database.equalsIgnoreCase(DatabaseOption.MARIA.toString())) {
+				return personaMapperRest.fromDomainToAdapterRestMaria(person);
+			} else {
+				return personaMapperRest.fromDomainToAdapterRestMongo(person);
+			}
 		} catch (InvalidOptionException e) {
 			log.warn(e.getMessage());
-			//return new PersonaResponse("", "", "", "", "", "", "");
 		}
 		return null;
 	}

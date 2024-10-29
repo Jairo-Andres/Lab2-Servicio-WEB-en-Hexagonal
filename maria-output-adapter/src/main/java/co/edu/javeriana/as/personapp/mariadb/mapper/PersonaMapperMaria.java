@@ -37,7 +37,11 @@ public class PersonaMapperMaria {
 		return personaEntity;
 	}
 
-	private Character validateGenero(@NonNull Gender gender) {
+	private Character validateGenero(Gender gender) {
+		if (gender == null) {
+			// Manejo explícito del caso nulo, podrías lanzar una excepción si es necesario.
+			throw new IllegalArgumentException("El campo 'gender' no puede ser nulo");
+		}
 		return gender == Gender.FEMALE ? 'F' : gender == Gender.MALE ? 'M' : ' ';
 	}
 
@@ -47,7 +51,8 @@ public class PersonaMapperMaria {
 
 	private List<EstudiosEntity> validateEstudios(List<Study> studies) {
 		return studies != null && !studies.isEmpty()
-				? studies.stream().map(study -> estudiosMapperMaria.fromDomainToAdapter(study)).collect(Collectors.toList())
+				? studies.stream().map(study -> estudiosMapperMaria.fromDomainToAdapter(study))
+						.collect(Collectors.toList())
 				: new ArrayList<EstudiosEntity>();
 	}
 
