@@ -12,8 +12,8 @@ import co.edu.javeriana.as.personapp.application.port.out.PersonOutputPort;
 import co.edu.javeriana.as.personapp.application.usecase.PersonUseCase;
 import co.edu.javeriana.as.personapp.common.annotations.Adapter;
 import co.edu.javeriana.as.personapp.common.exceptions.InvalidOptionException;
+import co.edu.javeriana.as.personapp.common.exceptions.NoExistException;
 import co.edu.javeriana.as.personapp.common.setup.DatabaseOption;
-import co.edu.javeriana.as.personapp.domain.Gender;
 import co.edu.javeriana.as.personapp.domain.Person;
 import co.edu.javeriana.as.personapp.mapper.PersonaMapperRest;
 import co.edu.javeriana.as.personapp.model.request.PersonaRequest;
@@ -82,6 +82,30 @@ public class PersonaInputAdapterRest {
 			log.warn(e.getMessage());
 		}
 		return null;
+	}
+
+	public PersonaResponse actualizarPersona(PersonaRequest request, String database) {
+		try {
+			setPersonOutputPortInjection(database);
+			Person person = personaMapperRest.fromAdapterToDomain(request);
+			Person updatedPerson = personInputPort.edit(Integer.parseInt(request.getDni()), person);
+			return personaMapperRest.fromDomainToAdapterRestMaria(updatedPerson);
+		} catch (InvalidOptionException | NoExistException e) {
+			log.warn(e.getMessage());
+			return null;
+		}
+	}
+
+	public void eliminarPersona(String dni, String database) {
+		try {
+			setPersonOutputPortInjection(database);
+			boolean result = personInputPort.drop(Integer.parseInt(dni));
+			if (!result) {
+				throw new RuntimeException("Persona no encontrada");
+			}
+		} catch (InvalidOptionException | NoExistException e) {
+			log.warn(e.getMessage());
+		}
 	}
 
 }
