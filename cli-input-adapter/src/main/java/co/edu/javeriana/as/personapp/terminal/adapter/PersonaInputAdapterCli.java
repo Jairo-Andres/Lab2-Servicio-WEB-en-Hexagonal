@@ -11,7 +11,10 @@ import co.edu.javeriana.as.personapp.application.port.out.PersonOutputPort;
 import co.edu.javeriana.as.personapp.application.usecase.PersonUseCase;
 import co.edu.javeriana.as.personapp.common.annotations.Adapter;
 import co.edu.javeriana.as.personapp.common.exceptions.InvalidOptionException;
+import co.edu.javeriana.as.personapp.common.exceptions.NoExistException;
 import co.edu.javeriana.as.personapp.common.setup.DatabaseOption;
+import co.edu.javeriana.as.personapp.domain.Gender;
+import co.edu.javeriana.as.personapp.domain.Person;
 import co.edu.javeriana.as.personapp.terminal.mapper.PersonaMapperCli;
 import co.edu.javeriana.as.personapp.terminal.model.PersonaModelCli;
 import lombok.extern.slf4j.Slf4j;
@@ -57,4 +60,57 @@ public class PersonaInputAdapterCli {
 				.forEach(System.out::println);
 	}
 
+	public void listarPersonas() {
+		log.info("Listing all persons in CLI Adapter");
+		List<PersonaModelCli> personas = personInputPort.findAll().stream()
+				.map(personaMapperCli::fromDomainToAdapterCli)
+				.collect(Collectors.toList());
+		personas.forEach(System.out::println);
+	}
+
+	public void crearPersona(Integer cc, String nombre, String apellido, String genero, Integer edad) {
+		log.info("Creating person in CLI Adapter");
+
+		// Mapeo de género a Enum Gender
+		Gender genderEnum;
+		if (genero.equalsIgnoreCase("M")) {
+			genderEnum = Gender.MALE;
+		} else if (genero.equalsIgnoreCase("F")) {
+			genderEnum = Gender.FEMALE;
+		} else {
+			throw new IllegalArgumentException("Género inválido: " + genero);
+		}
+
+		Person person = new Person(cc, nombre, apellido, genderEnum, edad, null, null);
+		personInputPort.create(person);
+		System.out.println("Persona creada: " + person);
+	}
+
+	public void actualizarPersona(Integer cc, String nombre, String apellido, String genero, Integer edad) {
+		log.info("Updating person in CLI Adapter");
+		try {
+			// Ajusta el constructor de Person para coincidir con los parámetros
+			// disponibles.
+			Person person = new Person(); // Reemplaza con los parámetros correctos
+			Person updatedPerson = personInputPort.edit(cc, person);
+			System.out.println("Person updated: " + updatedPerson);
+		} catch (NoExistException e) {
+			System.out.println("Error updating person: " + e.getMessage());
+		}
+	}
+
+	public void borrarPersona(Integer cc) {
+		log.info("Deleting person in CLI Adapter");
+		try {
+			// Asegúrate de que el método correcto está siendo llamado según la interfaz.
+			boolean deleted = personInputPort.drop(cc); // Cambia `delete` por `drop` si corresponde.
+			if (deleted) {
+				System.out.println("Person deleted successfully.");
+			} else {
+				System.out.println("Person not found.");
+			}
+		} catch (NoExistException e) {
+			System.out.println("Error deleting person: " + e.getMessage());
+		}
+	}
 }

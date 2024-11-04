@@ -16,7 +16,9 @@ public class PersonaMenu {
 
 	private static final int OPCION_REGRESAR_MOTOR_PERSISTENCIA = 0;
 	private static final int OPCION_VER_TODO = 1;
-	// mas opciones
+	private static final int OPCION_CREAR_PERSONA = 2;
+	private static final int OPCION_ACTUALIZAR_PERSONA = 3;
+	private static final int OPCION_BORRAR_PERSONA = 4;
 
 	public void iniciarMenu(PersonaInputAdapterCli personaInputAdapterCli, Scanner keyboard) {
 		boolean isValid = false;
@@ -58,7 +60,15 @@ public class PersonaMenu {
 					case OPCION_VER_TODO:
 						personaInputAdapterCli.historial();
 						break;
-					// mas opciones
+					case OPCION_CREAR_PERSONA:
+						crearPersona(personaInputAdapterCli, keyboard);
+						break;
+					case OPCION_ACTUALIZAR_PERSONA:
+						actualizarPersona(personaInputAdapterCli, keyboard);
+						break;
+					case OPCION_BORRAR_PERSONA:
+						borrarPersona(personaInputAdapterCli, keyboard);
+						break;
 					default:
 						log.warn("La opción elegida no es válida.");
 				}
@@ -68,10 +78,59 @@ public class PersonaMenu {
 		} while (!isValid);
 	}
 
+	private void crearPersona(PersonaInputAdapterCli personaInputAdapterCli, Scanner keyboard) {
+		System.out.print("Ingrese la cédula de la persona: ");
+		Integer cc = keyboard.nextInt();
+		keyboard.nextLine();
+
+		System.out.print("Ingrese el nombre de la persona: ");
+		String nombre = keyboard.nextLine();
+
+		System.out.print("Ingrese el apellido de la persona: ");
+		String apellido = keyboard.nextLine();
+
+		System.out.print("Ingrese el género de la persona (M/F): ");
+		String genero = keyboard.nextLine();
+
+		System.out.print("Ingrese la edad de la persona: ");
+		Integer edad = keyboard.nextInt();
+
+		personaInputAdapterCli.crearPersona(cc, nombre, apellido, genero, edad);
+	}
+
+	private void actualizarPersona(PersonaInputAdapterCli personaInputAdapterCli, Scanner keyboard) {
+		System.out.print("Ingrese la cédula de la persona a actualizar: ");
+		Integer cc = keyboard.nextInt();
+		keyboard.nextLine();
+
+		System.out.print("Ingrese el nuevo nombre de la persona: ");
+		String nombre = keyboard.nextLine();
+
+		System.out.print("Ingrese el nuevo apellido de la persona: ");
+		String apellido = keyboard.nextLine();
+
+		System.out.print("Ingrese el nuevo género de la persona (M/F): ");
+		String genero = keyboard.nextLine();
+
+		System.out.print("Ingrese la nueva edad de la persona: ");
+		Integer edad = keyboard.nextInt();
+
+		personaInputAdapterCli.actualizarPersona(cc, nombre, apellido, genero, edad);
+	}
+
+	private void borrarPersona(PersonaInputAdapterCli personaInputAdapterCli, Scanner keyboard) {
+		System.out.print("Ingrese la cédula de la persona a eliminar: ");
+		Integer cc = keyboard.nextInt();
+
+		personaInputAdapterCli.borrarPersona(cc);
+	}
+
 	private void mostrarMenuOpciones() {
 		System.out.println("----------------------");
 		System.out.println(OPCION_VER_TODO + " para ver todas las personas");
-		// implementar otras opciones
+		System.out.println(OPCION_CREAR_PERSONA + " para crear una nueva persona");
+		System.out.println(OPCION_ACTUALIZAR_PERSONA + " para actualizar una persona existente");
+		System.out.println(OPCION_BORRAR_PERSONA + " para eliminar una persona");
 		System.out.println(OPCION_REGRESAR_MOTOR_PERSISTENCIA + " para regresar");
 	}
 
@@ -88,8 +147,8 @@ public class PersonaMenu {
 			return keyboard.nextInt();
 		} catch (InputMismatchException e) {
 			log.warn("Solo se permiten números.");
+			keyboard.nextLine(); // Limpia el buffer
 			return leerOpcion(keyboard);
 		}
 	}
-
 }
