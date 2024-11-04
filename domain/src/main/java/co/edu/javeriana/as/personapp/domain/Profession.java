@@ -21,4 +21,11 @@ public class Profession {
 	private String description;
 	@ToString.Exclude
 	private List<Study> studies;
+
+	// Constructor que necesitas
+	public Profession(Integer identification, String name, String description) {
+		this.identification = identification;
+		this.name = name;
+		this.description = description;
+	}
 }

@@ -18,7 +18,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.3.28</version> <!-- Updated to a version without known vulnerabilities -->
+            <version>5.3.28</version> <!-- Versión sin vulnerabilidades conocidas -->
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
@@ -35,19 +35,4 @@
             </exclusions>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>repackage</id>
-                        <phase>none</phase> <!-- Deshabilitar reempacado -->
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
