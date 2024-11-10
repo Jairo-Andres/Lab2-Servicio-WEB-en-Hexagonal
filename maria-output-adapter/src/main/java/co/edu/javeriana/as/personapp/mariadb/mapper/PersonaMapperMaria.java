@@ -90,7 +90,16 @@ public class PersonaMapperMaria {
 
 	private List<Phone> validatePhones(List<TelefonoEntity> telefonoEntities) {
 		return telefonoEntities != null && !telefonoEntities.isEmpty() ? telefonoEntities.stream()
-				.map(telefono -> telefonoMapperMaria.fromAdapterToDomain(telefono)).collect(Collectors.toList())
-				: new ArrayList<Phone>();
+				.map(telefono -> {
+					Phone phone = new Phone();
+					phone.setNumber(telefono.getNum());
+					phone.setCompany(telefono.getOper());
+					Person owner = new Person();
+					owner.setIdentification(telefono.getDuenio().getCc());
+					phone.setOwner(owner);
+					return phone;
+				}).collect(Collectors.toList())
+				: new ArrayList<>();
 	}
+
 }

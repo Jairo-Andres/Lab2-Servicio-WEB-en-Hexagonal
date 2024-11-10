@@ -19,19 +19,21 @@ public class TelefonoMapperMongo {
 		TelefonoDocument telefonoDocument = new TelefonoDocument();
 		telefonoDocument.setId(phone.getNumber());
 		telefonoDocument.setOper(phone.getCompany());
-		telefonoDocument.setPrimaryDuenio(validateDuenio(phone.getOwner()));
+		// En lugar de hacer una conversión completa, solo almacena la ID del
+		// propietario
+		telefonoDocument.setPrimaryDuenio(
+				new PersonaDocument(phone.getOwner().getIdentification(), null, null, null, null, null, null));
 		return telefonoDocument;
-	}
-
-	private PersonaDocument validateDuenio(@NonNull Person owner) {
-		return owner != null ? personaMapperMongo.fromDomainToAdapter(owner) : new PersonaDocument();
 	}
 
 	public Phone fromAdapterToDomain(TelefonoDocument telefonoDocument) {
 		Phone phone = new Phone();
 		phone.setNumber(telefonoDocument.getId());
 		phone.setCompany(telefonoDocument.getOper());
-		phone.setOwner(validateOwner(telefonoDocument.getPrimaryDuenio()));
+		// Solo referencia el ID del propietario sin convertirlo completamente
+		Person owner = new Person();
+		owner.setIdentification(telefonoDocument.getPrimaryDuenio().getId());
+		phone.setOwner(owner);
 		return phone;
 	}
 

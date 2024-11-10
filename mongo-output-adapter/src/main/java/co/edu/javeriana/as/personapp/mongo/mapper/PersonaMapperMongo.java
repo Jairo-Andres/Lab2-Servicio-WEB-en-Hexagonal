@@ -85,7 +85,16 @@ public class PersonaMapperMongo {
 
 	private List<Phone> validatePhones(List<TelefonoDocument> telefonosDocuments) {
 		return telefonosDocuments != null && !telefonosDocuments.isEmpty() ? telefonosDocuments.stream()
-				.map(telefono -> telefonoMapperMongo.fromAdapterToDomain(telefono)).collect(Collectors.toList())
-				: new ArrayList<Phone>();
+				.map(telefono -> {
+					Phone phone = new Phone();
+					phone.setNumber(telefono.getId());
+					phone.setCompany(telefono.getOper());
+					Person owner = new Person();
+					owner.setIdentification(telefono.getPrimaryDuenio().getId());
+					phone.setOwner(owner);
+					return phone;
+				}).collect(Collectors.toList())
+				: new ArrayList<>();
 	}
+
 }
