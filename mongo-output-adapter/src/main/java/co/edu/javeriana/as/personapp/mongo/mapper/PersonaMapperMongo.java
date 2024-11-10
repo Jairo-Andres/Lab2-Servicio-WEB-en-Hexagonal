@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import co.edu.javeriana.as.personapp.common.annotations.Mapper;
 import co.edu.javeriana.as.personapp.domain.Gender;
@@ -21,9 +22,11 @@ import lombok.NonNull;
 public class PersonaMapperMongo {
 
 	@Autowired
+	@Lazy
 	private EstudiosMapperMongo estudiosMapperMongo;
 
 	@Autowired
+	@Lazy
 	private TelefonoMapperMongo telefonoMapperMongo;
 
 	public PersonaDocument fromDomainToAdapter(Person person) {

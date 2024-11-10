@@ -1,6 +1,7 @@
 package co.edu.javeriana.as.personapp.mariadb.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import co.edu.javeriana.as.personapp.common.annotations.Mapper;
 import co.edu.javeriana.as.personapp.domain.Person;
@@ -13,6 +14,7 @@ import lombok.NonNull;
 public class TelefonoMapperMaria {
 
 	@Autowired
+	@Lazy
 	private PersonaMapperMaria personaMapperMaria;
 
 	public TelefonoEntity fromDomainToAdapter(Phone phone) {

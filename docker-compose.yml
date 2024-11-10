@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  mariadb:
+    image: mariadb:10.5
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: persona_db
+      MYSQL_USER: persona_db
+      MYSQL_PASSWORD: persona_db
+    ports:
+      - "3306:3306"
+    networks:
+      - personapp-network
+
+  mongodb:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    networks:
+      - personapp-network
+
+  rest:
+    build:
+      context: .  # Contexto en el directorio raíz del proyecto
+      dockerfile: ./rest-input-adapter/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/persona_db
+      SPRING_DATASOURCE_USERNAME: persona_db
+      SPRING_DATASOURCE_PASSWORD: persona_db
+    depends_on:
+      - mariadb
+      - mongodb
+    networks:
+      - personapp-network
+
+  cli:
+    build:
+      context: .  # Contexto en el directorio raíz del proyecto
+      dockerfile: ./cli-input-adapter/Dockerfile
+    depends_on:
+      - mariadb
+      - mongodb
+    networks:
+      - personapp-network
+
+networks:
+  personapp-network:
+    driver: bridge
