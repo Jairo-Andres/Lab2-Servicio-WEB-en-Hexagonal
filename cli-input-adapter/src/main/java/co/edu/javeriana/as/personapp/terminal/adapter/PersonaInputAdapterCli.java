@@ -88,10 +88,22 @@ public class PersonaInputAdapterCli {
 
 	public void actualizarPersona(Integer cc, String nombre, String apellido, String genero, Integer edad) {
 		log.info("Updating person in CLI Adapter");
+
+		// Mapeo de género a Enum Gender
+		Gender genderEnum;
+		if (genero.equalsIgnoreCase("M")) {
+			genderEnum = Gender.MALE;
+		} else if (genero.equalsIgnoreCase("F")) {
+			genderEnum = Gender.FEMALE;
+		} else {
+			throw new IllegalArgumentException("Género inválido: " + genero);
+		}
+
 		try {
-			// Ajusta el constructor de Person para coincidir con los parámetros
-			// disponibles.
-			Person person = new Person(); // Reemplaza con los parámetros correctos
+			// Crear el objeto Person con los parámetros actualizados
+			Person person = new Person(cc, nombre, apellido, genderEnum, edad, null, null);
+
+			// Llamar a edit para actualizar la persona en la base de datos
 			Person updatedPerson = personInputPort.edit(cc, person);
 			System.out.println("Person updated: " + updatedPerson);
 		} catch (NoExistException e) {

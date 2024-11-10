@@ -10,6 +10,7 @@ import co.edu.javeriana.as.personapp.common.annotations.Mapper;
 import co.edu.javeriana.as.personapp.domain.Gender;
 import co.edu.javeriana.as.personapp.domain.Person;
 import co.edu.javeriana.as.personapp.domain.Phone;
+import co.edu.javeriana.as.personapp.domain.Profession;
 import co.edu.javeriana.as.personapp.domain.Study;
 import co.edu.javeriana.as.personapp.mongo.document.EstudiosDocument;
 import co.edu.javeriana.as.personapp.mongo.document.PersonaDocument;
@@ -37,7 +38,11 @@ public class PersonaMapperMongo {
 		return personaDocument;
 	}
 
-	private String validateGenero(@NonNull Gender gender) {
+	private String validateGenero(Gender gender) {
+		if (gender == null) {
+			return " "; // Retorna un espacio en blanco o un valor por defecto para evitar
+						// `NullPointerException`
+		}
 		return gender == Gender.FEMALE ? "F" : gender == Gender.MALE ? "M" : " ";
 	}
 
@@ -46,15 +51,17 @@ public class PersonaMapperMongo {
 	}
 
 	private List<EstudiosDocument> validateEstudios(List<Study> studies) {
-		return studies != null && !studies.isEmpty() ? studies.stream()
-				.map(study -> estudiosMapperMongo.fromDomainToAdapter(study)).collect(Collectors.toList())
-				: new ArrayList<EstudiosDocument>();
+		return studies != null && !studies.isEmpty()
+				? studies.stream()
+						.map(study -> estudiosMapperMongo.fromDomainToAdapter(study))
+						.collect(Collectors.toList())
+				: new ArrayList<>();
 	}
 
 	private List<TelefonoDocument> validateTelefonos(List<Phone> phoneNumbers) {
 		return phoneNumbers != null && !phoneNumbers.isEmpty() ? phoneNumbers.stream()
 				.map(phone -> telefonoMapperMongo.fromDomainToAdapter(phone)).collect(Collectors.toList())
-				: new ArrayList<TelefonoDocument>();
+				: new ArrayList<>();
 	}
 
 	public Person fromAdapterToDomain(PersonaDocument personaDocument) {
@@ -70,6 +77,9 @@ public class PersonaMapperMongo {
 	}
 
 	private @NonNull Gender validateGender(String genero) {
+		if (genero == null || genero.trim().isEmpty()) {
+			return Gender.OTHER; // Retorna un valor por defecto para evitar `NullPointerException`
+		}
 		return "F".equals(genero) ? Gender.FEMALE : "M".equals(genero) ? Gender.MALE : Gender.OTHER;
 	}
 
@@ -78,23 +88,38 @@ public class PersonaMapperMongo {
 	}
 
 	private List<Study> validateStudies(List<EstudiosDocument> estudiosDocuments) {
-		return estudiosDocuments != null && !estudiosDocuments.isEmpty() ? estudiosDocuments.stream()
-				.map(estudio -> estudiosMapperMongo.fromAdapterToDomain(estudio)).collect(Collectors.toList())
-				: new ArrayList<Study>();
-	}
-
-	private List<Phone> validatePhones(List<TelefonoDocument> telefonosDocuments) {
-		return telefonosDocuments != null && !telefonosDocuments.isEmpty() ? telefonosDocuments.stream()
-				.map(telefono -> {
-					Phone phone = new Phone();
-					phone.setNumber(telefono.getId());
-					phone.setCompany(telefono.getOper());
-					Person owner = new Person();
-					owner.setIdentification(telefono.getPrimaryDuenio().getId());
-					phone.setOwner(owner);
-					return phone;
-				}).collect(Collectors.toList())
+		return estudiosDocuments != null && !estudiosDocuments.isEmpty()
+				? estudiosDocuments.stream()
+						.map(estudio -> {
+							Study study = new Study();
+							study.setGraduationDate(estudio.getFecha());
+							study.setUniversityName(estudio.getUniver());
+							// Solo establece el ID de la persona para evitar recursión infinita
+							Person minimalPerson = new Person();
+							minimalPerson.setIdentification(estudio.getPrimaryPersona().getId());
+							study.setPerson(minimalPerson);
+							// Solo establece el ID de la profesión para evitar recursión infinita
+							Profession minimalProfession = new Profession();
+							minimalProfession.setIdentification(estudio.getPrimaryProfesion().getId());
+							study.setProfession(minimalProfession);
+							return study;
+						})
+						.collect(Collectors.toList())
 				: new ArrayList<>();
 	}
 
+	private List<Phone> validatePhones(List<TelefonoDocument> telefonosDocuments) {
+		return telefonosDocuments != null && !telefonosDocuments.isEmpty()
+				? telefonosDocuments.stream()
+						.map(telefono -> {
+							Phone phone = telefonoMapperMongo.fromAdapterToDomain(telefono);
+							// Solo establece el ID del propietario para evitar recursión
+							Person minimalPerson = new Person();
+							minimalPerson.setIdentification(telefono.getPrimaryDuenio().getId());
+							phone.setOwner(minimalPerson);
+							return phone;
+						})
+						.collect(Collectors.toList())
+				: new ArrayList<>();
+	}
 }

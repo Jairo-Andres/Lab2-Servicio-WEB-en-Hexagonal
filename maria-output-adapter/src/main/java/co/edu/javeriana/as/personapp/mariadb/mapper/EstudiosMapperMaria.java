@@ -7,9 +7,12 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import co.edu.javeriana.as.personapp.common.annotations.Mapper;
+import co.edu.javeriana.as.personapp.domain.Person;
+import co.edu.javeriana.as.personapp.domain.Profession;
 import co.edu.javeriana.as.personapp.domain.Study;
 import co.edu.javeriana.as.personapp.mariadb.entity.EstudiosEntity;
 import co.edu.javeriana.as.personapp.mariadb.entity.EstudiosEntityPK;
+import co.edu.javeriana.as.personapp.mariadb.entity.PersonaEntity;
 
 @Mapper
 public class EstudiosMapperMaria {
@@ -21,13 +24,20 @@ public class EstudiosMapperMaria {
 	private ProfesionMapperMaria profesionMapperMaria;
 
 	public EstudiosEntity fromDomainToAdapter(Study study) {
-		EstudiosEntityPK estudioPK = new EstudiosEntityPK();
-		estudioPK.setCcPer(study.getPerson().getIdentification());
-		estudioPK.setIdProf(study.getProfession().getIdentification());
+		EstudiosEntityPK estudioPK = new EstudiosEntityPK(
+				study.getProfession().getIdentification(),
+				study.getPerson().getIdentification());
 		EstudiosEntity estudio = new EstudiosEntity();
 		estudio.setEstudiosPK(estudioPK);
 		estudio.setFecha(validateFecha(study.getGraduationDate()));
 		estudio.setUniver(validateUniver(study.getUniversityName()));
+
+		// Solo se establece el ID de Persona para evitar recursión infinita
+		PersonaEntity persona = new PersonaEntity();
+		persona.setCc(study.getPerson().getIdentification());
+		estudio.setPersona(persona);
+
+		estudio.setProfesion(profesionMapperMaria.fromDomainToAdapter(study.getProfession()));
 		return estudio;
 	}
 
@@ -43,14 +53,23 @@ public class EstudiosMapperMaria {
 
 	public Study fromAdapterToDomain(EstudiosEntity estudiosEntity) {
 		Study study = new Study();
-		study.setPerson(personaMapperMaria.fromAdapterToDomain(estudiosEntity.getPersona()));
-		study.setProfession(profesionMapperMaria.fromAdapterToDomain(estudiosEntity.getProfesion()));
 		study.setGraduationDate(validateGraduationDate(estudiosEntity.getFecha()));
 		study.setUniversityName(validateUniversityName(estudiosEntity.getUniver()));
-		return null;
+		// Solo establece el ID de la persona para evitar recursión infinita
+		Person person = new Person();
+		person.setIdentification(estudiosEntity.getPersona().getCc());
+		study.setPerson(person);
+		// Solo establece el ID de la profesión para evitar recursión infinita
+		Profession profession = new Profession();
+		profession.setIdentification(estudiosEntity.getProfesion().getId());
+		study.setProfession(profession);
+		return study;
 	}
 
 	private LocalDate validateGraduationDate(Date fecha) {
+		if (fecha instanceof java.sql.Date) {
+			return ((java.sql.Date) fecha).toLocalDate();
+		}
 		return fecha != null ? fecha.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null;
 	}
 

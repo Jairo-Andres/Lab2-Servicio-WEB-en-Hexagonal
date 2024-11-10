@@ -1,12 +1,16 @@
 package co.edu.javeriana.as.personapp.mariadb.mapper;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import co.edu.javeriana.as.personapp.common.annotations.Mapper;
+import co.edu.javeriana.as.personapp.domain.Person;
 import co.edu.javeriana.as.personapp.domain.Profession;
 import co.edu.javeriana.as.personapp.domain.Study;
 import co.edu.javeriana.as.personapp.mariadb.entity.EstudiosEntity;
@@ -32,9 +36,11 @@ public class ProfesionMapperMaria {
 	}
 
 	private List<EstudiosEntity> validateEstudios(List<Study> studies) {
-		return studies != null && !studies.isEmpty() ? studies.stream()
-				.map(study -> estudiosMapperMaria.fromDomainToAdapter(study)).collect(Collectors.toList())
-				: new ArrayList<EstudiosEntity>();
+		return studies != null && !studies.isEmpty()
+				? studies.stream()
+						.map(study -> estudiosMapperMaria.fromDomainToAdapter(study))
+						.collect(Collectors.toList())
+				: new ArrayList<>();
 	}
 
 	public Profession fromAdapterToDomain(ProfesionEntity profesionEntity) {
@@ -51,8 +57,34 @@ public class ProfesionMapperMaria {
 	}
 
 	private List<Study> validateStudies(List<EstudiosEntity> estudiosEntity) {
-		return estudiosEntity != null && !estudiosEntity.isEmpty() ? estudiosEntity.stream()
-				.map(estudio -> estudiosMapperMaria.fromAdapterToDomain(estudio)).collect(Collectors.toList())
-				: new ArrayList<Study>();
+		return estudiosEntity != null && !estudiosEntity.isEmpty()
+				? estudiosEntity.stream()
+						.map(estudio -> {
+							Study study = new Study();
+							study.setGraduationDate(validateGraduationDate(estudio.getFecha()));
+							study.setUniversityName(validateUniversityName(estudio.getUniver()));
+							// Solo establece el ID de la persona para evitar recursión infinita
+							Person minimalPerson = new Person();
+							minimalPerson.setIdentification(estudio.getPersona().getCc());
+							study.setPerson(minimalPerson);
+							// Solo establece el ID de la profesión para evitar recursión infinita
+							Profession minimalProfession = new Profession();
+							minimalProfession.setIdentification(estudio.getProfesion().getId());
+							study.setProfession(minimalProfession);
+							return study;
+						})
+						.collect(Collectors.toList())
+				: new ArrayList<>();
+	}
+
+	private LocalDate validateGraduationDate(Date fecha) {
+		if (fecha instanceof java.sql.Date) {
+			return ((java.sql.Date) fecha).toLocalDate();
+		}
+		return fecha != null ? fecha.toInstant().atZone(ZoneId.systemDefault()).toLocalDate() : null;
+	}
+
+	private String validateUniversityName(String univer) {
+		return univer != null ? univer : "";
 	}
 }

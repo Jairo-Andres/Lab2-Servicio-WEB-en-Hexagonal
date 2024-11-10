@@ -51,9 +51,10 @@ public class PersonaMapperMaria {
 
 	private List<EstudiosEntity> validateEstudios(List<Study> studies) {
 		return studies != null && !studies.isEmpty()
-				? studies.stream().map(study -> estudiosMapperMaria.fromDomainToAdapter(study))
+				? studies.stream()
+						.map(study -> estudiosMapperMaria.fromDomainToAdapter(study))
 						.collect(Collectors.toList())
-				: new ArrayList<EstudiosEntity>();
+				: new ArrayList<>();
 	}
 
 	private List<TelefonoEntity> validateTelefonos(List<Phone> phoneNumbers) {
@@ -83,22 +84,32 @@ public class PersonaMapperMaria {
 	}
 
 	private List<Study> validateStudies(List<EstudiosEntity> estudiosEntity) {
-		return estudiosEntity != null && !estudiosEntity.isEmpty() ? estudiosEntity.stream()
-				.map(estudio -> estudiosMapperMaria.fromAdapterToDomain(estudio)).collect(Collectors.toList())
-				: new ArrayList<Study>();
+		return estudiosEntity != null && !estudiosEntity.isEmpty()
+				? estudiosEntity.stream()
+						.map(estudio -> {
+							Study study = estudiosMapperMaria.fromAdapterToDomain(estudio);
+							// Solo establece el ID para evitar recursión
+							Person minimalPerson = new Person();
+							minimalPerson.setIdentification(estudio.getPersona().getCc());
+							study.setPerson(minimalPerson);
+							return study;
+						})
+						.collect(Collectors.toList())
+				: new ArrayList<>();
 	}
 
 	private List<Phone> validatePhones(List<TelefonoEntity> telefonoEntities) {
-		return telefonoEntities != null && !telefonoEntities.isEmpty() ? telefonoEntities.stream()
-				.map(telefono -> {
-					Phone phone = new Phone();
-					phone.setNumber(telefono.getNum());
-					phone.setCompany(telefono.getOper());
-					Person owner = new Person();
-					owner.setIdentification(telefono.getDuenio().getCc());
-					phone.setOwner(owner);
-					return phone;
-				}).collect(Collectors.toList())
+		return telefonoEntities != null && !telefonoEntities.isEmpty()
+				? telefonoEntities.stream()
+						.map(telefono -> {
+							Phone phone = telefonoMapperMaria.fromAdapterToDomain(telefono);
+							// Solo establece el ID del propietario para evitar recursión
+							Person minimalPerson = new Person();
+							minimalPerson.setIdentification(telefono.getDuenio().getCc());
+							phone.setOwner(minimalPerson);
+							return phone;
+						})
+						.collect(Collectors.toList())
 				: new ArrayList<>();
 	}
 

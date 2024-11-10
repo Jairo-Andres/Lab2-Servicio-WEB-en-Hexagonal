@@ -4,6 +4,8 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import co.edu.javeriana.as.personapp.common.exceptions.InvalidOptionException;
+import co.edu.javeriana.as.personapp.domain.Gender;
+import co.edu.javeriana.as.personapp.domain.Person;
 import co.edu.javeriana.as.personapp.terminal.adapter.PersonaInputAdapterCli;
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,6 +100,7 @@ public class PersonaMenu {
 		personaInputAdapterCli.crearPersona(cc, nombre, apellido, genero, edad);
 	}
 
+	// En el método actualizarPersona de PersonaMenu
 	private void actualizarPersona(PersonaInputAdapterCli personaInputAdapterCli, Scanner keyboard) {
 		System.out.print("Ingrese la cédula de la persona a actualizar: ");
 		Integer cc = keyboard.nextInt();
@@ -111,10 +114,20 @@ public class PersonaMenu {
 
 		System.out.print("Ingrese el nuevo género de la persona (M/F): ");
 		String genero = keyboard.nextLine();
+		Gender genderEnum = null;
+		if (genero.equalsIgnoreCase("M")) {
+			genderEnum = Gender.MALE;
+		} else if (genero.equalsIgnoreCase("F")) {
+			genderEnum = Gender.FEMALE;
+		} else {
+			System.out.println("Género inválido. Debe ser 'M' o 'F'.");
+			return; // Salir si el género es inválido
+		}
 
 		System.out.print("Ingrese la nueva edad de la persona: ");
 		Integer edad = keyboard.nextInt();
 
+		Person person = new Person(cc, nombre, apellido, genderEnum, edad, null, null);
 		personaInputAdapterCli.actualizarPersona(cc, nombre, apellido, genero, edad);
 	}
 

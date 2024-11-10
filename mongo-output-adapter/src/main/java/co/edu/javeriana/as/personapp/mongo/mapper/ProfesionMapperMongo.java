@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import co.edu.javeriana.as.personapp.common.annotations.Mapper;
+import co.edu.javeriana.as.personapp.domain.Person;
 import co.edu.javeriana.as.personapp.domain.Profession;
 import co.edu.javeriana.as.personapp.domain.Study;
 import co.edu.javeriana.as.personapp.mongo.document.EstudiosDocument;
@@ -14,7 +15,7 @@ import co.edu.javeriana.as.personapp.mongo.document.ProfesionDocument;
 
 @Mapper
 public class ProfesionMapperMongo {
-	
+
 	@Autowired
 	private EstudiosMapperMongo estudiosMapperMongo;
 
@@ -52,7 +53,20 @@ public class ProfesionMapperMongo {
 
 	private List<Study> validateStudies(List<EstudiosDocument> estudiosDocument) {
 		return estudiosDocument != null && !estudiosDocument.isEmpty() ? estudiosDocument.stream()
-				.map(estudio -> estudiosMapperMongo.fromAdapterToDomain(estudio)).collect(Collectors.toList())
-				: new ArrayList<Study>();
+				.map(estudio -> {
+					Study study = new Study();
+					study.setGraduationDate(estudio.getFecha());
+					study.setUniversityName(estudio.getUniver());
+					// Solo establece el ID de la persona para evitar recursión infinita
+					Person minimalPerson = new Person();
+					minimalPerson.setIdentification(estudio.getPrimaryPersona().getId());
+					study.setPerson(minimalPerson);
+					// Solo establece el ID de la profesión para evitar recursión infinita
+					Profession minimalProfession = new Profession();
+					minimalProfession.setIdentification(estudio.getPrimaryProfesion().getId());
+					study.setProfession(minimalProfession);
+					return study;
+				}).collect(Collectors.toList())
+				: new ArrayList<>();
 	}
 }

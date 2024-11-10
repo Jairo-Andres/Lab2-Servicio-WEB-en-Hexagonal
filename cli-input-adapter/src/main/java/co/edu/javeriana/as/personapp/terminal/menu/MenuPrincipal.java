@@ -6,6 +6,7 @@ import java.util.Scanner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import co.edu.javeriana.as.personapp.terminal.adapter.EstudioInputAdapterCli;
 import co.edu.javeriana.as.personapp.terminal.adapter.PersonaInputAdapterCli;
 import co.edu.javeriana.as.personapp.terminal.adapter.ProfessionInputAdapterCli;
 import co.edu.javeriana.as.personapp.terminal.adapter.TelefonoInputAdapterCli;
@@ -22,6 +23,8 @@ public class MenuPrincipal {
 	private ProfessionInputAdapterCli professionInputAdapterCli;
 	@Autowired
 	private TelefonoInputAdapterCli telefonoInputAdapterCli;
+	@Autowired
+	private EstudioInputAdapterCli estudioInputAdapterCli;
 
 	private static final int SALIR = 0;
 	private static final int MODULO_PERSONA = 1;
@@ -33,12 +36,14 @@ public class MenuPrincipal {
 	private final PersonaMenu personaMenu;
 	private final ProfessionMenu professionMenu;
 	private final TelefonoMenu telefonoMenu;
+	private final EstudioMenu estudioMenu;
 	private final Scanner keyboard;
 
 	public MenuPrincipal() {
 		this.personaMenu = new PersonaMenu();
 		this.professionMenu = new ProfessionMenu();
 		this.telefonoMenu = new TelefonoMenu();
+		this.estudioMenu = new EstudioMenu();
 		this.keyboard = new Scanner(System.in);
 	}
 
@@ -66,7 +71,8 @@ public class MenuPrincipal {
 					log.info("Volvio");
 					break;
 				case MODULO_ESTUDIO:
-					log.warn("Implementar Menu");
+					estudioMenu.iniciarMenu(estudioInputAdapterCli, keyboard);
+					log.info("Volvió");
 					break;
 				default:
 					log.warn("La opción elegida no es válida.");

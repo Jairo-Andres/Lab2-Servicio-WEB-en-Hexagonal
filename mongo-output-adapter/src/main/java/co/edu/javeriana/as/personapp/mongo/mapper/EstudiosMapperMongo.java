@@ -37,11 +37,11 @@ public class EstudiosMapperMongo {
 	}
 
 	private PersonaDocument validatePrimaryPersona(@NonNull Person person) {
-		return person != null ? personaMapperMongo.fromDomainToAdapter(person) : new PersonaDocument();
+		return personaMapperMongo.fromDomainToAdapter(person);
 	}
 
 	private ProfesionDocument validatePrimaryProfesion(@NonNull Profession profession) {
-		return profession != null ? profesionMapperMongo.fromDomainToAdapter(profession) : new ProfesionDocument();
+		return profesionMapperMongo.fromDomainToAdapter(profession);
 	}
 
 	private LocalDate validateFecha(LocalDate graduationDate) {
@@ -54,18 +54,16 @@ public class EstudiosMapperMongo {
 
 	public Study fromAdapterToDomain(EstudiosDocument estudiosDocument) {
 		Study study = new Study();
-		study.setPerson(personaMapperMongo.fromAdapterToDomain(estudiosDocument.getPrimaryPersona()));
-		study.setProfession(profesionMapperMongo.fromAdapterToDomain(estudiosDocument.getPrimaryProfesion()));
-		study.setGraduationDate(validateGraduationDate(estudiosDocument.getFecha()));
-		study.setUniversityName(validateUniversityName(estudiosDocument.getUniver()));
-		return null;
-	}
-
-	private LocalDate validateGraduationDate(LocalDate fecha) {
-		return fecha != null ? fecha : null;
-	}
-
-	private String validateUniversityName(String univer) {
-		return univer != null ? univer : "";
+		// Solo establece el ID de la persona para evitar recursión infinita
+		Person person = new Person();
+		person.setIdentification(estudiosDocument.getPrimaryPersona().getId());
+		study.setPerson(person);
+		// Solo establece el ID de la profesión para evitar recursión infinita
+		Profession profession = new Profession();
+		profession.setIdentification(estudiosDocument.getPrimaryProfesion().getId());
+		study.setProfession(profession);
+		study.setGraduationDate(estudiosDocument.getFecha());
+		study.setUniversityName(estudiosDocument.getUniver());
+		return study;
 	}
 }
